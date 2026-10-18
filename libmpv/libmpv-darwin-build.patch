@@ -1,0 +1,173 @@
+diff --git a/Makefile b/Makefile
+index b96190c..863227f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -360,7 +360,6 @@ ${INTERMEDIATE_DIR}/libxml2_%: \
+ ${INTERMEDIATE_DIR}/ffmpeg_%: \
+ 	${DOWNLOADS_DIR} \
+ 	${PKGCONFIG_DIR} \
+-	${INTERMEDIATE_DIR}/mbedtls_$$(word 1,$$(subst -, ,$$*))-$$(word 2,$$(subst -, ,$$*)) \
+ 	$$(if $$(filter encodersgpl, $$(word 4,$$(subst -, ,$$*))), \
+ 		${INTERMEDIATE_DIR}/libvorbis_$$(word 1,$$(subst -, ,$$*))-$$(word 2,$$(subst -, ,$$*)) \
+ 		${INTERMEDIATE_DIR}/libogg_$$(word 1,$$(subst -, ,$$*))-$$(word 2,$$(subst -, ,$$*)) \
+@@ -969,7 +968,6 @@ ${INTERMEDIATE_DIR}/libx264_%: \
+ ${INTERMEDIATE_DIR}/libs-arch_%: \
+ 	${INTERMEDIATE_DIR}/mpv_$$(word 1,$$(subst -, ,$$*))-$$(word 2,$$(subst -, ,$$*))-$$(word 3,$$(subst -, ,$$*)) \
+ 	${INTERMEDIATE_DIR}/ffmpeg_$$(word 1,$$(subst -, ,$$*))-$$(word 2,$$(subst -, ,$$*))-$$(word 3,$$(subst -, ,$$*))-$$(word 4,$$(subst -, ,$$*)) \
+-	${INTERMEDIATE_DIR}/mbedtls_$$(word 1,$$(subst -, ,$$*))-$$(word 2,$$(subst -, ,$$*)) \
+ 	$$(if $$(filter encodersgpl, $$(word 4,$$(subst -, ,$$*))), \
+ 		${INTERMEDIATE_DIR}/fftools-ffi_$$(word 1,$$(subst -, ,$$*))-$$(word 2,$$(subst -, ,$$*))-$$(word 3,$$(subst -, ,$$*)) \
+ 		${INTERMEDIATE_DIR}/libvorbis_$$(word 1,$$(subst -, ,$$*))-$$(word 2,$$(subst -, ,$$*)) \
+diff --git a/cross-files/iossimulator-arm64.ini b/cross-files/iossimulator-arm64.ini
+index a4bd31b..4218a59 100644
+--- a/cross-files/iossimulator-arm64.ini
++++ b/cross-files/iossimulator-arm64.ini
+@@ -15,14 +15,14 @@ strip = ['strip']
+ pkgconfig = ['pkg-config']
+ 
+ [built-in options]
+-c_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-miphoneos-version-min=12.0']
+-cpp_args = ['-stdlib=libc++', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-miphoneos-version-min=12.0']
+-objc_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-miphoneos-version-min=12.0']
+-objcpp_args = ['-stdlib=libc++', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-miphoneos-version-min=12.0']
+-c_link_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-miphoneos-version-min=12.0']
+-cpp_link_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-miphoneos-version-min=12.0']
+-objc_link_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-miphoneos-version-min=12.0']
+-objcpp_link_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-miphoneos-version-min=12.0']
++c_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-mios-simulator-version-min=12.0']
++cpp_args = ['-stdlib=libc++', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-mios-simulator-version-min=12.0']
++objc_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-mios-simulator-version-min=12.0']
++objcpp_args = ['-stdlib=libc++', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-mios-simulator-version-min=12.0']
++c_link_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-mios-simulator-version-min=12.0']
++cpp_link_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-mios-simulator-version-min=12.0']
++objc_link_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-mios-simulator-version-min=12.0']
++objcpp_link_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk', '-mios-simulator-version-min=12.0']
+ 
+ [properties]
+ cmake_osx_sysroot = '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk'
+diff --git a/cross-files/macos-arm64.ini b/cross-files/macos-arm64.ini
+index 3617015..81a2006 100644
+--- a/cross-files/macos-arm64.ini
++++ b/cross-files/macos-arm64.ini
+@@ -15,7 +15,7 @@ strip = ['strip']
+ pkgconfig = ['pkg-config']
+ 
+ [built-in options]
+-c_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk', '-mmacosx-version-min=10.9']
++c_args = ['-Wno-int-conversion', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk', '-mmacosx-version-min=10.9']
+ cpp_args = ['-stdlib=libc++', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk', '-mmacosx-version-min=10.9']
+ objc_args = ['-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk', '-mmacosx-version-min=10.9']
+ objcpp_args = ['-stdlib=libc++', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk', '-mmacosx-version-min=10.9']
+diff --git a/scripts/ffmpeg/build.sh b/scripts/ffmpeg/build.sh
+index cb14b05..3409b0d 100644
+--- a/scripts/ffmpeg/build.sh
++++ b/scripts/ffmpeg/build.sh
+@@ -9,6 +9,9 @@ patch -p1 <${PROJECT_DIR}/patches/ffmpeg-fix-vp9-hwaccel.patch
+ patch -p1 <${PROJECT_DIR}/patches/ffmpeg-fix-hls-mp4-seek.patch
+ patch -p1 <${PROJECT_DIR}/patches/ffmpeg-fix-ios-hdr-texture.patch
+ patch -p1 <${PROJECT_DIR}/patches/ffmpeg-fix-dash-base-url-escape.patch
++# Simple Media Viewer: DTS は既定でコア（DTS-HD の拡張を除いた部分）だけをデコードする
++sed -i '' 's/OFFSET(core_only), AV_OPT_TYPE_BOOL, { .i64 = 0 }/OFFSET(core_only), AV_OPT_TYPE_BOOL, { .i64 = 1 }/' libavcodec/dcadec.c
++grep -q 'OFFSET(core_only), AV_OPT_TYPE_BOOL, { .i64 = 1 }' libavcodec/dcadec.c
+ 
+ cp ${PROJECT_DIR}/scripts/ffmpeg/meson.* .
+ 
+diff --git a/scripts/ffmpeg/meson.build b/scripts/ffmpeg/meson.build
+index aa3831e..b9b4560 100644
+--- a/scripts/ffmpeg/meson.build
++++ b/scripts/ffmpeg/meson.build
+@@ -11,7 +11,7 @@ objc = meson.get_compiler('objc')
+ nm = find_program('nm')
+ ar = find_program('ar')
+ strip = find_program('strip')
+-pkg_config = find_program('pkgconfig')
++pkg_config = find_program('pkg-config')
+ 
+ # build options
+ c_args = get_option('c_args')
+@@ -46,8 +46,6 @@ common_options = [
+     '--enable-network',
+     '--enable-pthreads',
+     '--enable-pic',
+-    '--enable-mbedtls', # tls support (mbedtls)
+-    '--enable-version3',
+     '--enable-safe-bitstream-reader',
+     '--enable-stripping',
+     '--enable-avcodec',
+@@ -75,7 +73,8 @@ video_common_options = [
+ # https://github.com/media-kit/libmpv-android-audio-build/blob/260666c0fef8c154971b5faf3f78da27c2bf2c40/buildscripts/flavors/default.sh
+ audio_default_options = [
+     # decoders
+-    '--enable-decoder=aac*',
++    # Simple Media Viewer: AAC は OS（AudioToolbox）のデコーダーを使う（ソフトウェアの aac は特許の対象なので入れない）
++    '--enable-decoder=aac_at',
+     '--enable-decoder=ac3',
+     '--enable-decoder=alac',
+     '--enable-decoder=als',
+@@ -151,16 +150,12 @@ audio_default_options = [
+     '--enable-protocol=hls',
+     '--enable-protocol=http',
+     '--enable-protocol=httpproxy',
+-    '--enable-protocol=https',
+     '--enable-protocol=pipe',
+     '--enable-protocol=rtmp',
+-    '--enable-protocol=rtmps',
+     '--enable-protocol=rtmpt',
+-    '--enable-protocol=rtmpts',
+     '--enable-protocol=rtp',
+     '--enable-protocol=subfile',
+     '--enable-protocol=tcp',
+-    '--enable-protocol=tls',
+     # '--enable-protocol=srt', # WARNING: Option --enable-protocol=srt did not match anything
+ 
+     # filters
+@@ -170,12 +165,22 @@ audio_default_options = [
+ 
+ # https://github.com/media-kit/libmpv-android-video-build/blob/7353af784df9bab3256acd8d90f208024d16ab96/buildscripts/flavors/default.sh
+ video_default_options = [
++    # Simple Media Viewer: AVPlayer 用に HLS（fMP4）へ詰め替える（mp4 の muxer、音声の FLAC への変換）
++    '--enable-muxer=mp4',
++    '--enable-muxer=mov',
++    '--enable-encoder=flac',
++    '--enable-decoder=truehd',
++    '--enable-decoder=mlp',
++    '--enable-decoder=pgssub',
++    '--enable-bsf=extract_extradata',
++    '--enable-bsf=h264_mp4toannexb',
++    '--enable-bsf=hevc_mp4toannexb',
+     # decoders
+     '--enable-decoder=flv',
+     '--enable-decoder=h263',
+     '--enable-decoder=h263i',
+     '--enable-decoder=h263p',
+-    '--enable-decoder=h264', # h264*
++    # Simple Media Viewer: H.264・HEVC のソフトウェアデコーダーは入れない（AVPlayer で再生する）
+     '--enable-decoder=mpeg1video',
+     '--enable-decoder=mpeg2video', # mpeg2*
+     '--enable-decoder=mpeg4', # mpeg4*
+@@ -184,7 +189,6 @@ video_default_options = [
+     '--enable-decoder=vp6f',
+     '--enable-decoder=vp8', # vp8*
+     '--enable-decoder=vp9', # vp9*
+-    '--enable-decoder=hevc', # hevc*
+     '--enable-decoder=av1', # av1*
+     '--enable-decoder=libdav1d',
+     '--enable-decoder=theora',
+@@ -328,7 +332,16 @@ elif flavor == 'encodersgpl'
+ endif
+ 
+ p = mod.add_project('configure',
+-    configure_options : options,
++    # Simple Media Viewer: VideoToolbox の H.264・HEVC の hwaccel はソフトウェアのデコーダーを一緒に入れてしまうので外す
++    configure_options : options + [
++        '--disable-hwaccel=h264_videotoolbox',
++        '--disable-hwaccel=hevc_videotoolbox',
++        '--disable-decoder=h264',
++        '--disable-decoder=hevc',
++        '--disable-decoder=aac',
++        '--disable-decoder=aac_fixed',
++        '--disable-decoder=aac_latm',
++    ],
+     cross_configure_options: [
+         '--enable-cross-compile',
+         '--target-os=@0@'.format(host_machine.system()),

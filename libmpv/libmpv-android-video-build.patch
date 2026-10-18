@@ -1,0 +1,475 @@
+diff --git a/buildscripts/build.sh b/buildscripts/build.sh
+index 33282bd..ee7000e 100755
+--- a/buildscripts/build.sh
++++ b/buildscripts/build.sh
+@@ -79,6 +79,8 @@ setup_prefix () {
+ [built-in options]
+ buildtype = 'release'
+ default_library = 'static'
++prefix = '/usr/local'
++libdir = 'lib'
+ wrap_mode = 'nodownload'
+ [binaries]
+ c = '$CC'
+@@ -112,7 +114,7 @@ build () {
+ 	printf >&2 '\e[1;34m%s\e[m\n' "Building $1..."
+ 	pushd deps/$1
+ 	BUILDSCRIPT=../../scripts/$1.sh
+- 	sudo chmod +x $BUILDSCRIPT
++ 	chmod +x $BUILDSCRIPT
+ 	[ $cleanbuild -eq 1 ] && $BUILDSCRIPT clean
+     $BUILDSCRIPT build
+     popd
+diff --git a/buildscripts/flavors/default.sh b/buildscripts/flavors/default.sh
+index 5968d5d..88fe7aa 100644
+--- a/buildscripts/flavors/default.sh
++++ b/buildscripts/flavors/default.sh
+@@ -30,7 +30,6 @@ cpuflags=
+ 	\
+ 	--disable-gpl \
+ 	--disable-nonfree \
+-	--enable-version3 \
+ 	--enable-static \
+ 	--disable-shared \
+ 	--disable-vulkan \
+@@ -70,7 +69,6 @@ cpuflags=
+ 	--enable-optimizations \
+ 	--enable-runtime-cpudetect \
+ 	\
+-	--enable-mbedtls \
+ 	\
+ 	--enable-libdav1d \
+ 	\
+@@ -87,7 +85,7 @@ cpuflags=
+ 	--enable-decoder=h263 \
+ 	--enable-decoder=h263i \
+ 	--enable-decoder=h263p \
+-	--enable-decoder=h264* \
++	--enable-decoder=h264_mediacodec \
+ 	--enable-decoder=mpeg1video \
+ 	--enable-decoder=mpeg2* \
+ 	--enable-decoder=mpeg4* \
+@@ -96,7 +94,7 @@ cpuflags=
+ 	--enable-decoder=vp6f \
+ 	--enable-decoder=vp8* \
+ 	--enable-decoder=vp9* \
+-	--enable-decoder=hevc* \
++	--enable-decoder=hevc_mediacodec \
+ 	--enable-decoder=av1* \
+ 	--enable-decoder=libdav1d \
+ 	--enable-decoder=theora \
+@@ -104,7 +102,7 @@ cpuflags=
+ 	--enable-decoder=mjpeg* \
+ 	--enable-decoder=wmv* \
+ 	\
+-	--enable-decoder=aac* \
++	--enable-decoder=aac_mediacodec \
+ 	--enable-decoder=ac3 \
+ 	--enable-decoder=alac \
+ 	--enable-decoder=als \
+@@ -233,16 +231,12 @@ cpuflags=
+ 	--enable-protocol=hls \
+ 	--enable-protocol=http \
+ 	--enable-protocol=httpproxy \
+-	--enable-protocol=https \
+ 	--enable-protocol=pipe \
+ 	--enable-protocol=rtmp \
+-	--enable-protocol=rtmps \
+ 	--enable-protocol=rtmpt \
+-	--enable-protocol=rtmpts \
+ 	--enable-protocol=rtp \
+ 	--enable-protocol=subfile \
+ 	--enable-protocol=tcp \
+-	--enable-protocol=tls \
+ 	--enable-protocol=srt \
+ 	\
+ 	--enable-encoder=mjpeg \
+diff --git a/buildscripts/include/depinfo.sh b/buildscripts/include/depinfo.sh
+index 4817574..e8d7a8c 100755
+--- a/buildscripts/include/depinfo.sh
++++ b/buildscripts/include/depinfo.sh
+@@ -3,7 +3,7 @@
+ ## Dependency versions
+ 
+ v_sdk=9123335_latest
+-v_ndk=25.2.9519653
++v_ndk=27.3.13750724
+ v_sdk_build_tools=33.0.2
+ 
+ v_libass=0.17.1
+@@ -13,7 +13,7 @@ v_freetype=2-13-0
+ v_mbedtls=3.4.0
+ v_dav1d=1.2.0
+ v_libxml2=2.10.3
+-v_ffmpeg=6.0
++v_ffmpeg=7.1.1
+ v_mpv=78d43740f52db817d98bcf24fb30a76ab6fa13ff
+ v_libogg=1.3.5
+ v_libvorbis=1.3.7
+@@ -27,9 +27,9 @@ dep_mbedtls=()
+ dep_dav1d=()
+ dep_libvorbis=(libogg)
+ if [ -n "$ENCODERS_GPL" ]; then
+-	dep_ffmpeg=(mbedtls dav1d libxml2 libvorbis libvpx libx264)
++	dep_ffmpeg=(dav1d libxml2 libvorbis libvpx libx264)
+ else
+-	dep_ffmpeg=(mbedtls dav1d libxml2)
++	dep_ffmpeg=(dav1d libxml2)
+ fi
+ dep_freetype2=()
+ dep_fribidi=()
+diff --git a/buildscripts/patches/ffmpeg/dca_core_only.patch b/buildscripts/patches/ffmpeg/dca_core_only.patch
+new file mode 100644
+index 0000000..8bcc430
+--- /dev/null
++++ b/buildscripts/patches/ffmpeg/dca_core_only.patch
+@@ -0,0 +1,13 @@
++diff --git a/libavcodec/dcadec.c b/libavcodec/dcadec.c
++index 86d86ea..f454277 100644
++--- a/libavcodec/dcadec.c
+++++ b/libavcodec/dcadec.c
++@@ -381,7 +381,7 @@ static av_cold int dcadec_init(AVCodecContext *avctx)
++ #define PARAM AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_DECODING_PARAM
++ 
++ static const AVOption dcadec_options[] = {
++-    { "core_only", "Decode core only without extensions", OFFSET(core_only), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, PARAM },
+++    { "core_only", "Decode core only without extensions", OFFSET(core_only), AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, PARAM },
++ 
++     { "channel_order", "Order in which the channels are to be exported",
++         OFFSET(output_channel_order), AV_OPT_TYPE_INT,
+diff --git a/buildscripts/patches/mpv/mpv_ffmpeg7.patch b/buildscripts/patches/mpv/mpv_ffmpeg7.patch
+new file mode 100644
+index 0000000..0dd114d
+--- /dev/null
++++ b/buildscripts/patches/mpv/mpv_ffmpeg7.patch
+@@ -0,0 +1,330 @@
++diff --git a/audio/decode/ad_spdif.c b/audio/decode/ad_spdif.c
++index 393af8a2a3..e1f6c42fe1 100644
++--- a/audio/decode/ad_spdif.c
+++++ b/audio/decode/ad_spdif.c
++@@ -53,7 +53,11 @@ struct spdifContext {
++     struct mp_decoder public;
++ };
++ 
+++#if LIBAVFORMAT_VERSION_MAJOR >= 61
+++static int write_packet(void *p, const uint8_t *buf, int buf_size)
+++#else
++ static int write_packet(void *p, uint8_t *buf, int buf_size)
+++#endif
++ {
++     struct spdifContext *ctx = p;
++ 
++diff --git a/demux/demux_lavf.c b/demux/demux_lavf.c
++index 347763bed8..aa170c5ffb 100644
++--- a/demux/demux_lavf.c
+++++ b/demux/demux_lavf.c
++@@ -50,6 +50,7 @@
++ 
++ #include "stream/stream.h"
++ #include "demux.h"
+++#include "h264_poc.h"
++ #include "stheader.h"
++ #include "options/m_config.h"
++ #include "options/m_option.h"
++@@ -222,6 +223,10 @@ struct stream_info {
++     double last_key_pts;
++     double highest_pts;
++     double ts_offset;
+++    // H.264 in AVI has no pts; computed from the POC (see h264_poc.h).
+++    Poc *poc;
+++    bool poc_anchored;
+++    int64_t poc_anchor_dts, poc_anchor, poc_frame_dur;
++ };
++ 
++ #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(59, 10, 100)
++@@ -1233,6 +1238,34 @@ static bool demux_lavf_read_packet(struct demuxer *demux,
++         return true; // don't signal EOF if skipping a packet
++     }
++ 
+++    // Empty video packets (e.g. AVI "drop" frames) would be taken as the end of
+++    // stream by MediaCodec decoders, so skip them.
+++    if (pkt->size == 0 && stream->type == STREAM_VIDEO) {
+++        av_packet_unref(pkt);
+++        return true;
+++    }
+++
+++    if (stream->type == STREAM_VIDEO && pkt->pts == AV_NOPTS_VALUE &&
+++        pkt->dts != AV_NOPTS_VALUE && st->codecpar->codec_id == AV_CODEC_ID_H264 &&
+++        !strcmp(priv->avfc->iformat->name, "avi"))
+++    {
+++        if (!info->poc) {
+++            info->poc = talloc_zero(priv, Poc);
+++            poc_init(info->poc, st->codecpar);
+++            AVRational fr = st->r_frame_rate.num ? st->r_frame_rate : st->avg_frame_rate;
+++            info->poc_frame_dur = fr.num ? av_rescale_q(1, av_inv_q(fr), st->time_base) : 1;
+++        }
+++        int64_t poc = poc_packet(info->poc, pkt->data, pkt->size, info->poc->length_size);
+++        if (poc != INT64_MIN) {
+++            if (!info->poc_anchored) {
+++                info->poc_anchored = true;
+++                info->poc_anchor_dts = pkt->dts;
+++                info->poc_anchor = poc;
+++            }
+++            pkt->pts = info->poc_anchor_dts + (poc - info->poc_anchor) / 2 * info->poc_frame_dur;
+++        }
+++    }
+++
++     struct demux_packet *dp = new_demux_packet_from_avpacket(pkt);
++     if (!dp) {
++         av_packet_unref(pkt);
++@@ -1295,6 +1328,14 @@ static bool demux_lavf_read_packet(struct demuxer *demux,
++ static void demux_seek_lavf(demuxer_t *demuxer, double seek_pts, int flags)
++ {
++     lavf_priv_t *priv = demuxer->priv;
+++    for (int n = 0; n < priv->num_streams; n++) {
+++        struct stream_info *info = priv->streams[n];
+++        if (info && info->poc) {
+++            info->poc_anchored = false;
+++            info->poc->prev_msb = info->poc->prev_lsb = info->poc->count = 0;
+++            info->poc->base = info->poc->max = 0;
+++        }
+++    }
++     int avsflags = 0;
++     int64_t seek_pts_av = 0;
++     int seek_stream = -1;
++diff --git a/demux/h264_poc.h b/demux/h264_poc.h
++new file mode 100644
++index 0000000000..6731c1a093
++--- /dev/null
+++++ b/demux/h264_poc.h
++@@ -0,0 +1,219 @@
+++/*
+++ * H.264 picture order count (POC) for streams without pts (e.g. H.264 in AVI),
+++ * used to give MediaCodec decoders presentation timestamps.
+++ * Added for Simple Media Viewer (libmpv-android-video-build patch).
+++ */
+++#pragma once
+++#include <stdint.h>
+++#include <stdlib.h>
+++#include <string.h>
+++#include <libavcodec/avcodec.h>
+++#include <libavutil/common.h>
+++
+++typedef struct {
+++  uint8_t *p;
+++  int size, bit;
+++} Bits;
+++
+++static unsigned bits_read(Bits *b, int n) {
+++  unsigned v = 0;
+++  while (n-- > 0) {
+++    int byte = b->bit >> 3;
+++    v = (v << 1) | (byte < b->size ? (b->p[byte] >> (7 - (b->bit & 7))) & 1 : 0);
+++    b->bit++;
+++  }
+++  return v;
+++}
+++
+++static unsigned bits_ue(Bits *b) {
+++  int zeros = 0;
+++  while (!bits_read(b, 1) && zeros < 32 && (b->bit >> 3) < b->size) zeros++;
+++  return ((1u << zeros) - 1) + bits_read(b, zeros);
+++}
+++
+++static int bits_se(Bits *b) {
+++  unsigned v = bits_ue(b);
+++  return v & 1 ? (int)((v + 1) / 2) : -(int)(v / 2);
+++}
+++
+++typedef struct {
+++  int valid, log2_max_frame_num, poc_type, log2_max_poc_lsb, frame_mbs_only, separate_colour_plane;
+++} Sps;
+++
+++typedef struct {
+++  Sps sps[32];
+++  int pps_sps[256];  
+++  int length_size;   
+++  int prev_msb, prev_lsb, count;
+++  
+++  int64_t base, max;
+++} Poc;
+++
+++
+++static int unescape(const uint8_t *src, int n, uint8_t *dst) {
+++  int len = 0, zeros = 0;
+++  for (int i = 0; i < n; i++) {
+++    if (zeros >= 2 && src[i] == 3) {
+++      zeros = 0;
+++      continue;
+++    }
+++    zeros = src[i] == 0 ? zeros + 1 : 0;
+++    dst[len++] = src[i];
+++  }
+++  return len;
+++}
+++
+++static void skip_scaling_list(Bits *b, int size) {
+++  int last = 8, next = 8;
+++  for (int j = 0; j < size; j++) {
+++    if (next) next = (last + bits_se(b) + 256) % 256;
+++    last = next ? next : last;
+++  }
+++}
+++
+++static void parse_sps(Poc *c, Bits *b) {
+++  int profile = bits_read(b, 8);
+++  bits_read(b, 16);
+++  unsigned id = bits_ue(b);
+++  if (id >= 32) return;
+++  Sps *s = &c->sps[id];
+++  memset(s, 0, sizeof *s);
+++  if (profile == 100 || profile == 110 || profile == 122 || profile == 244 || profile == 44 || profile == 83 ||
+++      profile == 86 || profile == 118 || profile == 128 || profile == 138 || profile == 139 || profile == 134 ||
+++      profile == 135) {
+++    unsigned chroma = bits_ue(b);
+++    if (chroma == 3) s->separate_colour_plane = bits_read(b, 1);
+++    bits_ue(b);
+++    bits_ue(b);
+++    bits_read(b, 1);
+++    if (bits_read(b, 1))
+++      for (int i = 0; i < (chroma != 3 ? 8 : 12); i++)
+++        if (bits_read(b, 1)) skip_scaling_list(b, i < 6 ? 16 : 64);
+++  }
+++  s->log2_max_frame_num = bits_ue(b) + 4;
+++  s->poc_type = bits_ue(b);
+++  if (s->poc_type == 0) {
+++    s->log2_max_poc_lsb = bits_ue(b) + 4;
+++  } else if (s->poc_type == 1) {
+++    bits_read(b, 1);
+++    bits_se(b);
+++    bits_se(b);
+++    unsigned n = bits_ue(b);
+++    for (unsigned i = 0; i < n && i < 256; i++) bits_se(b);
+++  }
+++  bits_ue(b);
+++  bits_read(b, 1);
+++  bits_ue(b);
+++  bits_ue(b);
+++  s->frame_mbs_only = bits_read(b, 1);
+++  s->valid = 1;
+++}
+++
+++
+++static int64_t poc_nal(Poc *c, const uint8_t *nal, int n) {
+++  if (n < 2) return INT64_MIN;
+++  int type = nal[0] & 0x1f, ref = (nal[0] >> 5) & 3;
+++  if (type != 1 && type != 5 && type != 7 && type != 8) return INT64_MIN;
+++  uint8_t *buf = malloc(n);
+++  Bits b = {buf, unescape(nal + 1, n - 1, buf), 0};
+++  int64_t result = INT64_MIN;
+++  if (type == 7) {
+++    parse_sps(c, &b);
+++  } else if (type == 8) {
+++    unsigned pps = bits_ue(&b), sps = bits_ue(&b);
+++    if (pps < 256 && sps < 32) c->pps_sps[pps] = sps;
+++  } else {
+++    bits_ue(&b);  
+++    bits_ue(&b);  
+++    unsigned pps = bits_ue(&b);
+++    int sid = pps < 256 ? c->pps_sps[pps] : -1;
+++    Sps *s = sid >= 0 ? &c->sps[sid] : NULL;
+++    if (!s || !s->valid || s->poc_type != 0) {
+++      result = 2 * (int64_t)c->count;  
+++      if (result > c->max) c->max = result;
+++    } else {
+++      if (s->separate_colour_plane) bits_read(&b, 2);
+++      bits_read(&b, s->log2_max_frame_num);
+++      if (!s->frame_mbs_only && bits_read(&b, 1)) bits_read(&b, 1);
+++      if (type == 5) {
+++        bits_ue(&b);
+++        c->prev_msb = c->prev_lsb = 0;
+++        if (c->count > 0) c->base = c->max + 2;
+++      }
+++      int lsb = bits_read(&b, s->log2_max_poc_lsb), max = 1 << s->log2_max_poc_lsb, msb;
+++      if (lsb < c->prev_lsb && c->prev_lsb - lsb >= max / 2) msb = c->prev_msb + max;
+++      else if (lsb > c->prev_lsb && lsb - c->prev_lsb > max / 2) msb = c->prev_msb - max;
+++      else msb = c->prev_msb;
+++      result = c->base + msb + lsb;
+++      if (result > c->max) c->max = result;
+++      if (ref) {
+++        c->prev_msb = msb;
+++        c->prev_lsb = lsb;
+++      }
+++    }
+++    c->count++;
+++  }
+++  free(buf);
+++  return result;
+++}
+++
+++
+++static int64_t poc_packet(Poc *c, const uint8_t *d, int n, int length_size) {
+++  int64_t poc = INT64_MIN;
+++  int i = 0;
+++  while (i < n) {
+++    int start, end;
+++    if (length_size) {
+++      if (i + length_size > n) break;
+++      int len = 0;
+++      for (int k = 0; k < length_size; k++) len = (len << 8) | d[i + k];
+++      start = i + length_size;
+++      end = FFMIN(n, start + len);
+++    } else {
+++      
+++      int s0 = -1;
+++      for (int k = i; k + 2 < n; k++)
+++        if (d[k] == 0 && d[k + 1] == 0 && d[k + 2] == 1) {
+++          s0 = k + 3;
+++          break;
+++        }
+++      if (s0 < 0) break;
+++      start = s0;
+++      end = n;
+++      for (int k = start; k + 2 < n; k++)
+++        if (d[k] == 0 && d[k + 1] == 0 && (d[k + 2] == 1 || (d[k + 2] == 0 && k + 3 < n && d[k + 3] == 1))) {
+++          end = k;
+++          break;
+++        }
+++    }
+++    int64_t r = poc_nal(c, d + start, end - start);
+++    if (poc == INT64_MIN) poc = r;
+++    i = end;
+++  }
+++  return poc;
+++}
+++
+++static void poc_init(Poc *c, AVCodecParameters *par) {
+++  memset(c, 0, sizeof *c);
+++  for (int i = 0; i < 256; i++) c->pps_sps[i] = -1;
+++  const uint8_t *e = par->extradata;
+++  int n = par->extradata_size;
+++  if (n > 6 && e[0] == 1) {
+++    
+++    c->length_size = (e[4] & 3) + 1;
+++    int p = 5;
+++    for (int pass = 0; pass < 2 && p < n; pass++) {
+++      int count = pass == 0 ? e[p++] & 0x1f : e[p++];
+++      for (int k = 0; k < count && p + 2 <= n; k++) {
+++        int len = (e[p] << 8) | e[p + 1];
+++        p += 2;
+++        if (p + len > n) break;
+++        poc_nal(c, e + p, len);
+++        p += len;
+++      }
+++    }
+++  } else if (n > 0) {
+++    poc_packet(c, e, n, 0);
+++  }
+++}
+++
++diff --git a/filters/f_lavfi.c b/filters/f_lavfi.c
++index fe7d3e4527..0978408a6b 100644
++--- a/filters/f_lavfi.c
+++++ b/filters/f_lavfi.c
++@@ -1029,7 +1029,11 @@ static const char *get_avopt_type_name(enum AVOptionType type)
++     case AV_OPT_TYPE_VIDEO_RATE:        return "fps";
++     case AV_OPT_TYPE_DURATION:          return "duration";
++     case AV_OPT_TYPE_COLOR:             return "color";
+++#if LIBAVUTIL_VERSION_MAJOR < 59
++     case AV_OPT_TYPE_CHANNEL_LAYOUT:    return "channellayout";
+++#else
+++    case AV_OPT_TYPE_CHLAYOUT:          return "channellayout";
+++#endif
++     case AV_OPT_TYPE_BOOL:              return "bool";
++     case AV_OPT_TYPE_CONST: // fallthrough
++     default:
