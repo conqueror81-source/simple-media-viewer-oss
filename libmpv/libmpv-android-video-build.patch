@@ -21,10 +21,10 @@ index 33282bd..ee7000e 100755
      $BUILDSCRIPT build
      popd
 diff --git a/buildscripts/flavors/default.sh b/buildscripts/flavors/default.sh
-index 5968d5d..88fe7aa 100644
+index 5968d5d..714e46f 100644
 --- a/buildscripts/flavors/default.sh
 +++ b/buildscripts/flavors/default.sh
-@@ -30,7 +30,6 @@ cpuflags=
+@@ -30,10 +30,27 @@ cpuflags=
  	\
  	--disable-gpl \
  	--disable-nonfree \
@@ -32,7 +32,28 @@ index 5968d5d..88fe7aa 100644
  	--enable-static \
  	--disable-shared \
  	--disable-vulkan \
-@@ -70,7 +69,6 @@ cpuflags=
++	--disable-decoder=vc1 \
++	--disable-decoder=vc1image \
++	--disable-decoder=wmv3 \
++	--disable-decoder=wmv3image \
++	--disable-decoder=dca \
++	--disable-decoder=truehd \
++	--disable-decoder=mlp \
++	--disable-decoder=wmav1 \
++	--disable-decoder=wmav2 \
++	--disable-decoder=wmapro \
++	--disable-decoder=wmavoice \
++	--disable-decoder=wmalossless \
++	--disable-decoder=atrac1 \
++	--disable-decoder=atrac3 \
++	--disable-decoder=atrac3al \
++	--disable-decoder=atrac3p \
++	--disable-decoder=atrac3pal \
++	--disable-decoder=atrac9 \
+ 	--disable-iconv \
+ 	--disable-stripping \
+ 	--pkg-config-flags=--static \
+@@ -70,7 +87,6 @@ cpuflags=
  	--enable-optimizations \
  	--enable-runtime-cpudetect \
  	\
@@ -40,7 +61,7 @@ index 5968d5d..88fe7aa 100644
  	\
  	--enable-libdav1d \
  	\
-@@ -87,7 +85,7 @@ cpuflags=
+@@ -87,7 +103,7 @@ cpuflags=
  	--enable-decoder=h263 \
  	--enable-decoder=h263i \
  	--enable-decoder=h263p \
@@ -49,7 +70,7 @@ index 5968d5d..88fe7aa 100644
  	--enable-decoder=mpeg1video \
  	--enable-decoder=mpeg2* \
  	--enable-decoder=mpeg4* \
-@@ -96,7 +94,7 @@ cpuflags=
+@@ -96,20 +112,20 @@ cpuflags=
  	--enable-decoder=vp6f \
  	--enable-decoder=vp8* \
  	--enable-decoder=vp9* \
@@ -58,16 +79,34 @@ index 5968d5d..88fe7aa 100644
  	--enable-decoder=av1* \
  	--enable-decoder=libdav1d \
  	--enable-decoder=theora \
-@@ -104,7 +102,7 @@ cpuflags=
+ 	--enable-decoder=msmpeg* \
  	--enable-decoder=mjpeg* \
- 	--enable-decoder=wmv* \
+-	--enable-decoder=wmv* \
++	--enable-decoder=wmv1 \
++	--enable-decoder=wmv2 \
  	\
 -	--enable-decoder=aac* \
 +	--enable-decoder=aac_mediacodec \
  	--enable-decoder=ac3 \
  	--enable-decoder=alac \
  	--enable-decoder=als \
-@@ -233,16 +231,12 @@ cpuflags=
+ 	--enable-decoder=ape \
+-	--enable-decoder=atrac* \
+ 	--enable-decoder=eac3 \
+ 	--enable-decoder=flac \
+ 	--enable-decoder=gsm* \
+@@ -125,10 +141,8 @@ cpuflags=
+ 	--enable-decoder=tta \
+ 	--enable-decoder=vorbis \
+ 	--enable-decoder=wavpack \
+-	--enable-decoder=wma* \
+ 	--enable-decoder=pcm* \
+ 	--enable-decoder=dsd* \
+-	--enable-decoder=dca \
+ 	\
+ 	--enable-decoder=ssa \
+ 	--enable-decoder=ass \
+@@ -233,16 +247,12 @@ cpuflags=
  	--enable-protocol=hls \
  	--enable-protocol=http \
  	--enable-protocol=httpproxy \
@@ -118,6 +157,38 @@ index 4817574..e8d7a8c 100755
  fi
  dep_freetype2=()
  dep_fribidi=()
+diff --git a/buildscripts/patches/ffmpeg/dash_base_url_escape.patch b/buildscripts/patches/ffmpeg/dash_base_url_escape.patch
+deleted file mode 100644
+index 36ed6d5..0000000
+--- a/buildscripts/patches/ffmpeg/dash_base_url_escape.patch
++++ /dev/null
+@@ -1,26 +0,0 @@
+-diff --git a/libavformat/dashdec.c b/libavformat/dashdec.c
+-index 29d4680..c50afaf 100644
+---- a/libavformat/dashdec.c
+-+++ b/libavformat/dashdec.c
+-@@ -768,7 +768,9 @@ static int resolve_content_path(AVFormatContext *s, const char *url, int *max_ur
+-     baseurl = xmlNodeGetContent(node);
+-     root_url = (av_strcasecmp(baseurl, "")) ? baseurl : path;
+-     if (node) {
+--        xmlNodeSetContent(node, root_url);
+-+        char* root_url_content = xmlEncodeSpecialChars(NULL, root_url);
+-+        xmlNodeSetContent(node, root_url_content);
+-+        xmlFree(root_url_content);
+-         updated = 1;
+-     }
+- 
+-@@ -802,7 +804,9 @@ static int resolve_content_path(AVFormatContext *s, const char *url, int *max_ur
+-                 memset(p + 1, 0, strlen(p));
+-             }
+-             av_strlcat(tmp_str, text + start, tmp_max_url_size);
+--            xmlNodeSetContent(baseurl_nodes[i], tmp_str);
+-+            char* tmp_str_content = xmlEncodeSpecialChars(NULL, tmp_str);
+-+            xmlNodeSetContent(baseurl_nodes[i], tmp_str_content);
+-+            xmlFree(tmp_str_content);
+-             updated = 1;
+-             xmlFree(text);
+-         }
 diff --git a/buildscripts/patches/ffmpeg/dca_core_only.patch b/buildscripts/patches/ffmpeg/dca_core_only.patch
 new file mode 100644
 index 0000000..8bcc430
@@ -137,6 +208,26 @@ index 0000000..8bcc430
 + 
 +     { "channel_order", "Order in which the channels are to be exported",
 +         OFFSET(output_channel_order), AV_OPT_TYPE_INT,
+diff --git a/buildscripts/patches/ffmpeg/hls_mp4_seek.patch b/buildscripts/patches/ffmpeg/hls_mp4_seek.patch
+deleted file mode 100644
+index 58bffce..0000000
+--- a/buildscripts/patches/ffmpeg/hls_mp4_seek.patch
++++ /dev/null
+@@ -1,14 +0,0 @@
+-diff --git a/libavformat/hls.c b/libavformat/hls.c
+-index 2a2fe28a540f..c625e3029116 100644
+---- a/libavformat/hls.c
+-+++ b/libavformat/hls.c
+-@@ -2506,6 +2506,9 @@ static int hls_read_seek(AVFormatContext *s, int stream_index,
+-         /* Flush the packet queue of the subdemuxer. */
+-         ff_read_frame_flush(pls->ctx);
+- 
+-+        /* Reset the init segment so it's re-fetched and served appropiately */
+-+        pls->cur_init_section = NULL;
+-+
+-         pls->seek_timestamp = seek_timestamp;
+-         pls->seek_flags = flags;
+- 
 diff --git a/buildscripts/patches/mpv/mpv_ffmpeg7.patch b/buildscripts/patches/mpv/mpv_ffmpeg7.patch
 new file mode 100644
 index 0000000..0dd114d

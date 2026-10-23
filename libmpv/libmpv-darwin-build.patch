@@ -73,7 +73,7 @@ index cb14b05..3409b0d 100644
  cp ${PROJECT_DIR}/scripts/ffmpeg/meson.* .
  
 diff --git a/scripts/ffmpeg/meson.build b/scripts/ffmpeg/meson.build
-index aa3831e..b9b4560 100644
+index aa3831e..779ef09 100644
 --- a/scripts/ffmpeg/meson.build
 +++ b/scripts/ffmpeg/meson.build
 @@ -11,7 +11,7 @@ objc = meson.get_compiler('objc')
@@ -121,7 +121,7 @@ index aa3831e..b9b4560 100644
      # '--enable-protocol=srt', # WARNING: Option --enable-protocol=srt did not match anything
  
      # filters
-@@ -170,12 +165,22 @@ audio_default_options = [
+@@ -170,12 +165,20 @@ audio_default_options = [
  
  # https://github.com/media-kit/libmpv-android-video-build/blob/7353af784df9bab3256acd8d90f208024d16ab96/buildscripts/flavors/default.sh
  video_default_options = [
@@ -129,8 +129,6 @@ index aa3831e..b9b4560 100644
 +    '--enable-muxer=mp4',
 +    '--enable-muxer=mov',
 +    '--enable-encoder=flac',
-+    '--enable-decoder=truehd',
-+    '--enable-decoder=mlp',
 +    '--enable-decoder=pgssub',
 +    '--enable-bsf=extract_extradata',
 +    '--enable-bsf=h264_mp4toannexb',
@@ -145,7 +143,7 @@ index aa3831e..b9b4560 100644
      '--enable-decoder=mpeg1video',
      '--enable-decoder=mpeg2video', # mpeg2*
      '--enable-decoder=mpeg4', # mpeg4*
-@@ -184,7 +189,6 @@ video_default_options = [
+@@ -184,7 +187,6 @@ video_default_options = [
      '--enable-decoder=vp6f',
      '--enable-decoder=vp8', # vp8*
      '--enable-decoder=vp9', # vp9*
@@ -153,7 +151,7 @@ index aa3831e..b9b4560 100644
      '--enable-decoder=av1', # av1*
      '--enable-decoder=libdav1d',
      '--enable-decoder=theora',
-@@ -328,7 +332,16 @@ elif flavor == 'encodersgpl'
+@@ -328,7 +330,36 @@ elif flavor == 'encodersgpl'
  endif
  
  p = mod.add_project('configure',
@@ -167,6 +165,26 @@ index aa3831e..b9b4560 100644
 +        '--disable-decoder=aac',
 +        '--disable-decoder=aac_fixed',
 +        '--disable-decoder=aac_latm',
++        # Simple Media Viewer: 特許の状況が確認できないデコーダー（DTS・TrueHD/MLP・WMA・ATRAC・VC-1/WMV3）も入れない。
++        # これらの形式は「再生できない」と表示する
++        '--disable-decoder=vc1',
++        '--disable-decoder=vc1image',
++        '--disable-decoder=wmv3',
++        '--disable-decoder=wmv3image',
++        '--disable-decoder=dca',
++        '--disable-decoder=truehd',
++        '--disable-decoder=mlp',
++        '--disable-decoder=wmav1',
++        '--disable-decoder=wmav2',
++        '--disable-decoder=wmapro',
++        '--disable-decoder=wmavoice',
++        '--disable-decoder=wmalossless',
++        '--disable-decoder=atrac1',
++        '--disable-decoder=atrac3',
++        '--disable-decoder=atrac3al',
++        '--disable-decoder=atrac3p',
++        '--disable-decoder=atrac3pal',
++        '--disable-decoder=atrac9',
 +    ],
      cross_configure_options: [
          '--enable-cross-compile',
